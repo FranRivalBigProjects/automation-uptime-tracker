@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Bot Uptime Tracker</title>
+<meta name="description" content="Paste a log of status checks (timestamp and up/down) and calculate your automation bot's uptime percentage and total downtime.">
+<meta name="google-site-verification" content="REPLACE_WITH_YOUR_VERIFICATION_CODE">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0f12;color:#d7dbe0;font-family:'JetBrains Mono',monospace;line-height:1.6;padding:24px 16px 60px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:22px;color:#7ee787;margin-bottom:6px}
+.subtitle{color:#8b949e;font-size:14px;margin-bottom:24px}
+.panel{background:#14171a;border:1px solid #2a2f36;border-radius:6px;padding:18px;margin-bottom:20px}
+.panel h2{font-size:15px;color:#58a6ff;margin-bottom:12px}
+textarea{width:100%;min-height:160px;background:#0a0c0e;border:1px solid #2a2f36;border-radius:4px;color:#d7dbe0;font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px;resize:vertical}
+.btn{background:#238636;color:#fff;border:none;border-radius:4px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;cursor:pointer;margin-top:12px}
+.info-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #1c2026}
+.info-row span:first-child{color:#8b949e}
+.info-row span:last-child{color:#7ee787;font-weight:500}
+article{font-size:13px;color:#a9b1bb;margin-top:26px}
+article h2{font-size:15px;color:#58a6ff;margin:16px 0 8px}
+article p{margin-bottom:8px}
+footer{text-align:center;font-size:11px;color:#4a5158;margin-top:34px}
+</style></head>
+<body><div class="wrap">
+<h1>Automation Bot Uptime Tracker</h1>
+<p class="subtitle">Paste your status check log (one entry per line, format: timestamp,status) and get an uptime summary.</p>
+<div class="panel">
+<label style="display:block;font-size:12px;color:#8b949e;margin-bottom:6px;">Format: 2026-01-01T08:00:00,up</label>
+<textarea id="logInput">2026-01-01T00:00:00,up
+2026-01-01T01:00:00,up
+2026-01-01T02:00:00,down
+2026-01-01T03:00:00,down
+2026-01-01T04:00:00,up
+2026-01-01T05:00:00,up
+2026-01-01T06:00:00,up
+2026-01-01T07:00:00,up</textarea>
+<button class="btn" id="calcBtn">Calculate Uptime</button>
+<div id="results" style="margin-top:14px;"></div>
+</div>
+<article><h2>Where This Log Comes From</h2><p>You can generate this format from your own monitoring script, a cron job that pings your bot's health endpoint, or by exporting logs from a monitoring service and reformatting them to timestamp,status per line.</p></article>
+<footer>Client-side tool. Nothing you paste here is stored or sent anywhere.</footer>
+</div>
+<script>
+function infoRow(label,value){ return '<div class="info-row"><span>'+label+'</span><span>'+value+'</span></div>'; }
+function calc(){
+  var raw=document.getElementById('logInput').value;
+  var lines=raw.split('\n');
+  var total=0, up=0, down=0;
+  var i;
+  for(i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line) continue;
+    var parts=line.split(',');
+    if(parts.length<2) continue;
+    var status=parts[1].trim().toLowerCase();
+    total++;
+    if(status==='up'){ up++; } else if(status==='down'){ down++; }
+  }
+  if(total===0){
+    document.getElementById('results').innerHTML=infoRow('Error','No valid entries found. Use format: timestamp,up or timestamp,down');
+    return;
+  }
+  var uptimePct=(up/total)*100;
+  var html='';
+  html+=infoRow('Total checks', total.toString());
+  html+=infoRow('Up checks', up.toString());
+  html+=infoRow('Down checks', down.toString());
+  html+=infoRow('Uptime percentage', uptimePct.toFixed(2)+'%');
+  document.getElementById('results').innerHTML=html;
+}
+document.getElementById('calcBtn').addEventListener('click',calc);
+calc();
+</script>
+</body></html>
